@@ -1,6 +1,8 @@
 package dev.ggoh.springboot.config.auth;
 
-import dev.ggoh.springboot.domain.user.User;
+import dev.ggoh.springboot.config.auth.dto.OAuthAttributes;
+import dev.ggoh.springboot.config.auth.dto.SessionUser;
+import dev.ggoh.springboot.domain.user.Member;
 import dev.ggoh.springboot.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,18 +33,18 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-        User user = saveOrUpdate(attributes);
+        Member user = saveOrUpdate(attributes);
         httpSession.setAttribute("user", new SessionUser(user));
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
-                    attributes.getAttribtues(),
+                    attributes.getAttributes(),
                     attributes.getNameAttributeKey()
         );
     }
 
-    private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByEmail(attributes.getEmail())
+    private Member saveOrUpdate(OAuthAttributes attributes) {
+        Member user = userRepository.findByEmail(attributes.getEmail())
                 .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(attributes.toEntity());
 
